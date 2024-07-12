@@ -35,7 +35,7 @@ def formatting_prompts_func(examples):
     outputs      = examples["func_documentation_string"]
     texts = []
     for input, output in zip(inputs, outputs):
-        instruction = "Please generate the comment of the above code in max 1 sentences."
+        instruction = "Please generate the comment of the code in max 1 sentences."
         # 必须添加EOS_TOKEN，否则无限生成
         text = alpaca_prompt.format(instruction, input, output) + EOS_TOKEN
         texts.append(text)
@@ -70,7 +70,7 @@ trainer = SFTTrainer(
     max_seq_length = max_seq_length,
     tokenizer = tokenizer,
     args = TrainingArguments(
-        per_device_train_batch_size = 8,
+        per_device_train_batch_size = 16,
         gradient_accumulation_steps = 4,
         warmup_steps = 10,
         # max_steps = 60,
