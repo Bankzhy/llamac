@@ -8,8 +8,6 @@ from trl import SFTTrainer
 from transformers import TrainingArguments
 from datasets import load_dataset, Dataset
 
-from src.dataset.SRE import SREDataset
-
 #加载模型
 max_seq_length = 2048
 dtype = None
