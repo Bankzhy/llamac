@@ -35,7 +35,7 @@ def formatting_prompts_func(examples):
     outputs      = examples["func_documentation_string"]
     texts = []
     for input, output in zip(inputs, outputs):
-        instruction = "Please generate the document for the following code."
+        instruction = "Please generate the comment of the above code in max 1 sentences."
         # 必须添加EOS_TOKEN，否则无限生成
         text = alpaca_prompt.format(instruction, input, output) + EOS_TOKEN
         texts.append(text)
@@ -43,7 +43,7 @@ def formatting_prompts_func(examples):
 
 
 #hugging face数据集路径
-train_dataset = load_dataset("code-search-net/code_search_net", split="train", trust_remote_code=True).select(range(100))
+train_dataset = load_dataset("code-search-net/code_search_net", split="train", trust_remote_code=True)
 train_dataset = train_dataset.map(formatting_prompts_func, batched = True,)
 
 
