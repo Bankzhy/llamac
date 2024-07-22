@@ -28,11 +28,15 @@ alpaca_prompt = """Below is an instruction that describes a task, paired with an
 
 EOS_TOKEN = tokenizer.eos_token # 必须添加 EOS_TOKEN
 def formatting_prompts_func(examples):
-    inputs       = examples["whole_func_string"]
-    outputs      = examples["func_documentation_string"]
+    inputs       = examples["src"]
+    outputs      = examples["tgt"]
     texts = []
     for input, output in zip(inputs, outputs):
-        instruction = "Please generate the comment of the code in max 1 sentences."
+        instruction = "Please check the grammar of following sentence and fix it. If it does not have any error return 'True', else return the correct sentence only. "
+
+        input_split = input.split(":")
+        input = input_split[1]
+
         # 必须添加EOS_TOKEN，否则无限生成
         text = alpaca_prompt.format(instruction, input, output) + EOS_TOKEN
         texts.append(text)
@@ -40,7 +44,8 @@ def formatting_prompts_func(examples):
 
 
 #hugging face数据集路径
-train_dataset = load_dataset("code-search-net/code_search_net", split="train", trust_remote_code=True)
+# train_dataset = load_dataset("code-search-net/code_search_net", split="train", trust_remote_code=True)
+train_dataset = load_dataset("grammarly/coedit", split="train", trust_remote_code=True)
 train_dataset = train_dataset.map(formatting_prompts_func, batched = True,)
 
 
@@ -67,10 +72,9 @@ trainer = SFTTrainer(
     max_seq_length = max_seq_length,
     tokenizer = tokenizer,
     args = TrainingArguments(
-        per_device_train_batch_size = 2,
+        per_device_train_batch_size = 1,
         gradient_accumulation_steps = 4,
         warmup_steps = 10,
-        max_steps = 60,
         fp16 = not torch.cuda.is_bf16_supported(),
         bf16 = torch.cuda.is_bf16_supported(),
         logging_steps = 1,

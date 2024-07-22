@@ -12,7 +12,7 @@ load_in_4bit = True
 # )
 
 model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="outputs",
+    model_name="outputs/llamac",
     max_seq_length = max_seq_length,
     dtype = dtype,
     load_in_4bit = load_in_4bit,
@@ -31,25 +31,15 @@ FastLanguageModel.for_inference(model)
 inputs = tokenizer(
 [
     alpaca_prompt.format(
-        "他们在公里玩得很开心。",
-        "",
+        "Please check the grammar of following sentence and fix it. If it does not have any error return 'True', else return the correct sentence only.",
+        "Besides some technologically determinists that allow the development of biometric identification, this technology is also shaped by three social factors, namely, the desire of the society for safety, convenience and economy.",
         "",
     )
 ], return_tensors = "pt").to("cuda")
 
 from transformers import TextStreamer
 text_streamer = TextStreamer(tokenizer)
-_ = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128)
+_ = model.generate(**inputs, max_new_tokens = 128)
 
-EOS_TOKEN = tokenizer.eos_token # 必须添加 EOS_TOKEN
-def formatting_prompts_func(examples):
-    instructions = examples["instruction"]
-    inputs       = examples["input"]
-    outputs      = examples["output"]
-    texts = []
-    for instruction, input, output in zip(instructions, inputs, outputs):
-        # 必须添加EOS_TOKEN，否则生成将永无止境
-        text = alpaca_prompt.format(instruction, input, output) + EOS_TOKEN
-        texts.append(text)
-    return { "text" : texts, }
-pass
+result = tokenizer.batch_decode(_)
+print(result)
